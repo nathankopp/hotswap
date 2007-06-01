@@ -4,6 +4,8 @@
 	<property name="hotswap.src" value="java"/>
 	<property name="hotswap.jar" value="${hotswap.build}/jar"/>
 	<property name="hotswap.jar.file" value="${hotswap.jar}/hotswap.jar"/>
+    <property name="hotswap.javadoc" value="${hotswap.build}/apidocs" />
+    <property name="hotswap.dist" value="dist" />
 
 	<path id="classpath.compile" >
 		<pathelement location="${hotswap.classes}" />
@@ -13,6 +15,7 @@
 		<mkdir dir="${hotswap.build}" />
 		<mkdir dir="${hotswap.classes}" />
         <mkdir dir="${hotswap.jar}" />
+        <mkdir dir="${hotswap.javadoc}" />
 	</target>
 
 	<target name="compile" depends="init">
@@ -21,6 +24,33 @@
 
 	<target name="jar" depends="compile">
         <jar destfile="${hotswap.jar.file}" basedir="${hotswap.classes}"/>
+	</target>
+
+	<target name="javadoc" depends="init">
+		<javadoc packagenames="dak.*"
+				sourcepath="${hotswap.src}"
+				defaultexcludes="yes"
+				destdir="${hotswap.javadoc}"
+				author="true"
+				version="true"
+				use="true"
+				windowtitle="Hotswap - an ant task for replacing classes on a running JVM">
+			<classpath refid="classpath.compile"/>
+			<link href="http://java.sun.com/j2se/1.5.0/docs/api"/>
+		</javadoc>
+	</target>
+
+	<target name="dist" depends="clean, jar, javadoc">
+		<input message="Enter the version # : " addproperty="rel.version"/>
+		<mkdir dir="${hotswap.dist}"/>
+		<zip destfile="${hotswap.dist}/hotswap-${rel.version}.zip">
+			<fileset file="${hotswap.jar.file}"/>
+			<fileset file="README"/>
+			<fileset file="LICENSE.txt"/>
+			<fileset dir="${hotswap.build}">
+				<include name="apidocs/**/*"/>
+			</fileset>
+		</zip>
 	</target>
 
 	<target name="clean" description="Deletes all the generated artifacts.">
